@@ -33,6 +33,7 @@ function App() {
   const [wgpa, setwgpa] = useState(0);
   const [classHons, setclassHons] = useState("");
   const [courseTableEntries, setCourseTableEntries] = useState([]);
+  // const [continuePage, setContinuePage] = useState(false)
 
   const handleFile = async e => {
     if (e.target.files[0] === undefined) {
@@ -67,16 +68,29 @@ function App() {
     });
 
     Promise.all(txt_contents_promise).then(txt_contents => {
+      let continuePage = false
       txt_contents.map(tc => {
         const anchor_line = [];
+        console.log(continuePage)
+        if (continuePage) {
+          anchor_line.push(-1)
+          console.log('was here')
+          continuePage = false
+        }
         tc.items.map((txt_line, idx) => {
           txt_line.str.startsWith("Plan") && anchor_line.push(idx);
         });
         let gpa_lines = [];
         anchor_line.map(idx => {
           idx++;
+          console.log(tc.items[idx-1])
           while (true) {
             // assumming a course code is only 4 letters (in capitals)
+            // console.log(tc.items[idx-1])
+            if (idx === tc.items.length) {
+              continuePage = true
+              break
+            }
             let first_four_char = tc.items[idx].str.slice(0, 4);
             if (
               first_four_char !== "    " &&
@@ -98,6 +112,10 @@ function App() {
           const year = Number(words[1].slice(0, 1));
           const unit = Number(reversed[2]);
           const gpa = Number(reversed[1]);
+
+          if (gpa === 0 || isNaN(unit)) {
+            return
+          }
 
           course_table_entries.push({ code, course, unit, gpa });
           console.log(
