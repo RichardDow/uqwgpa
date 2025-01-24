@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FileInput from "bs-custom-file-input";
 import "./App.css";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Table,
-  tbody,
-  thead,
-  tr,
-  th,
-  td
-} from "react-bootstrap";
+import { Container, Row, Col, Card, Table } from "react-bootstrap";
 const pdfjsLib = require("pdfjs-dist");
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
 
@@ -21,7 +10,7 @@ const WGPA_THRESHOLD = {
   5.65: "Honours IIA",
   5.0: "Honours IIB",
   4.0: "Honours IIIA",
-  0: "Honours IIIB"
+  0: "Honours IIIB",
 };
 
 function App() {
@@ -35,14 +24,14 @@ function App() {
   const [courseTableEntries, setCourseTableEntries] = useState([]);
   // const [continuePage, setContinuePage] = useState(false)
 
-  const handleFile = async e => {
+  const handleFile = async (e) => {
     if (e.target.files[0] === undefined) {
       return;
     }
     setfilename(e.target.files[0].name);
     const fr = new FileReader();
     let data = [];
-    fr.onload = e => {
+    fr.onload = (e) => {
       data = fr.result;
       process(data);
     };
@@ -51,7 +40,7 @@ function App() {
     // const data = await e.target.files[0].arrayBuffer();
   };
 
-  const process = async data => {
+  const process = async (data) => {
     let sum_unit_gpa = 0;
     let sum_unit = 0;
     const doc = await pdfjsLib.getDocument(data);
@@ -63,33 +52,33 @@ function App() {
       pages.push(await doc.getPage(i));
     }
 
-    const txt_contents_promise = pages.map(p => {
+    const txt_contents_promise = pages.map((p) => {
       return p.getTextContent();
     });
 
-    Promise.all(txt_contents_promise).then(txt_contents => {
-      let continuePage = false
-      txt_contents.map(tc => {
+    Promise.all(txt_contents_promise).then((txt_contents) => {
+      let continuePage = false;
+      txt_contents.map((tc) => {
         const anchor_line = [];
-        console.log(continuePage)
+        console.log(continuePage);
         if (continuePage) {
-          anchor_line.push(-1)
-          console.log('was here')
-          continuePage = false
+          anchor_line.push(-1);
+          console.log("was here");
+          continuePage = false;
         }
         tc.items.map((txt_line, idx) => {
           txt_line.str.startsWith("Plan") && anchor_line.push(idx);
         });
         let gpa_lines = [];
-        anchor_line.map(idx => {
+        anchor_line.map((idx) => {
           idx++;
-          console.log(tc.items[idx-1])
+          console.log(tc.items[idx - 1]);
           while (true) {
             // assumming a course code is only 4 letters (in capitals)
             // console.log(tc.items[idx-1])
             if (idx === tc.items.length) {
-              continuePage = true
-              break
+              continuePage = true;
+              break;
             }
             let first_four_char = tc.items[idx].str.slice(0, 4);
             if (
@@ -103,8 +92,8 @@ function App() {
             } else break;
           }
         });
-        gpa_lines.map(line => {
-          const words = line.split(" ").filter(word => word !== "");
+        gpa_lines.map((line) => {
+          const words = line.split(" ").filter((word) => word !== "");
           const reversed = [...words].reverse();
           // console.log(words)
           const code = words[0] + words[1];
@@ -114,7 +103,7 @@ function App() {
           const gpa = Number(reversed[1]);
 
           if (gpa === 0 || isNaN(unit)) {
-            return
+            return;
           }
 
           course_table_entries.push({ code, course, unit, gpa });
@@ -138,7 +127,7 @@ function App() {
     });
   };
 
-  const classifyHons = wgpa => {
+  const classifyHons = (wgpa) => {
     const thres_vals = Object.keys(WGPA_THRESHOLD);
     console.log(wgpa);
     console.log(thres_vals);
@@ -169,7 +158,9 @@ function App() {
     <Container className="App main-container">
       <Row>
         <Col className="mb-2">
-          <div className="title mb-2 txt-center">UQ Weighted GPA Calculator</div>
+          <div className="title mb-2 txt-center">
+            UQ Weighted GPA Calculator
+          </div>
           <Card className="main-card">
             <Card.Subtitle className="subtitle" style={{ lineHeight: "1.6" }}>
               A WGPA calculator for Bachelor of Engineering (Honours)/Master of
@@ -188,7 +179,10 @@ function App() {
                   className="custom-file-input pointer"
                   onChange={handleFile}
                 />
-                <label className="custom-file-label overflow-hid" htmlFor="inputGroupFile01">
+                <label
+                  className="custom-file-label overflow-hid"
+                  htmlFor="inputGroupFile01"
+                >
                   {filename}
                 </label>
               </div>
@@ -215,9 +209,7 @@ function App() {
                             <th className="txt-center">Grade</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {renderCourseTable()}
-                        </tbody>
+                        <tbody>{renderCourseTable()}</tbody>
                       </Table>
                     </Col>
                   </Row>
